@@ -30,12 +30,14 @@ def query_02(connection, column_names, datum = '1980-01-16'):
 def query_03(connection, column_names):
     # Bouw je query
     query="""
-    SELECT DISTINCT t.name, p.nameFirst, p.nameLast
+    SELECT DISTINCT t.name, m.nameFirst, m.nameLast
     FROM     Teams as t, 
-             Managers as m,
-             Master as p
-    WHERE    m.plyrMgr = 'N' AND p.playerID = m.playerID
-    ORDER BY t.name;
+             (SELECT DISTINCT man.teamID, man.plyrMgr, p.nameFirst, p.nameLast
+              FROM	 Master p JOIN managers man 
+              ON p.playerID = man.playerID) as m
+    WHERE    m.plyrMgr = 'N'
+    AND		 m.teamID = t.teamID
+    ORDER BY t.name ASC;
     """
     
     # Stap 2 & 3
