@@ -180,12 +180,15 @@ def query_09(connection, column_names, jaar=1975):
     # Bouw je query
     query="""
     SELECT t1.yearID, t1.name, t1.HR
-    FROM   Teams as t1
+    FROM   (SELECT t.yearID, t.name, t.HR
+            FROM   Teams as t
+            WHERE  t.yearID = '{}') as t1
     WHERE  (SELECT COUNT(*)
-            FROM   Teams as t2
+            FROM   (SELECT t.HR
+                    FROM   Teams as t
+                    WHERE  t.yearID = '{}') as t2
             WHERE  t1.HR < t2.HR)
-            = 1
-    AND     t1.yearID = '{}';
+            = 1;
     """.format(jaar)
     
     # Stap 2 & 3
