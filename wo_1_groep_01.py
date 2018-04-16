@@ -17,7 +17,7 @@ def query_02(connection, column_names, datum = '1980-11-16'):
     query="""
     SELECT p.nameFirst, p.nameLast, p.birthYear, p.birthMonth, p.birthDay
     FROM Master as p
-    WHERE STR_TO_DATE(p.debut, '%Y-%m-%d') > STR_TO_DATE({}, '%Y-%m-%d')
+    WHERE p.debut > '{}'
     ORDER BY p.nameLast ASC;
     """.format(datum)
     
@@ -124,7 +124,7 @@ def query_06(connection, column_names, salaris=20000):
         FROM Salaries as s
         WHERE s.yearID = t.yearID
             AND s.teamID = t.teamID
-            AND s.salary < ' salaris ')
+            AND s.salary < '{}')
     ORDER BY t.W ASC;
     """.format(salaris)
     
@@ -163,9 +163,9 @@ def query_08(connection, column_names, jaar=1990, lengte=75):
     SELECT p.birthState, AVG(p.weight), AVG(p.height), AVG(bat.HR), AVG(pitch.SV)
     FROM Master as p, Batting as bat, Pitching as pitch, HallOfFame as hof
     WHERE p.playerID = pitch.playerID AND p.playerID = bat.playerID
-        AND p.playerID = hof.playerID AND hof.yearid > ' jaar ' AND hof.inducted = 'Y'
+        AND p.playerID = hof.playerID AND hof.yearid > '{}' AND hof.inducted = 'Y'
     GROUP BY p.birthState
-    HAVING AVG(p.height) > ' lengte '
+    HAVING AVG(p.height) > {}
     ORDER BY p.birthState ASC 
     """.format(jaar, lengte)
     
