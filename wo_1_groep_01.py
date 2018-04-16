@@ -12,7 +12,7 @@ def query_01(connection, column_names):
     
     return df
 
-def query_02(connection, column_names, datum = '1980-01-16'):
+def query_02(connection, column_names, datum = '1980-11-16'):
     # Bouw je query
     query="""
     SELECT p.nameFirst, p.nameLast, p.birthYear, p.birthMonth, p.birthDay
@@ -49,17 +49,44 @@ def query_03(connection, column_names):
 def query_04(connection, column_names, datum_x='1980-01-01', datum_y='1980-01-01'):
     # Bouw je query
     query="""
-    SELECT  t.name, t.rank, t.W, t.L, p.nameFirst, p.nameLast
-    
-    FROM    Teams as t, HallOfFame as h, Managers as m, Master as p
-    
-    WHERE   p.playerID = m.playerID AND
-            m.playerID = h.playerID AND 
-            h.yearID > {} AND     
-            m.teamID = t.teamID AND 
-            m.yearID > {}              
- 
-    ORDER BY t.name;
+SELECT DISTINCT
+    t.name,
+    t.rank,
+    t.W,
+    t.L,
+    m.nameFirst,
+    m.nameLast
+FROM
+    Teams AS t,
+    (
+    SELECT DISTINCT
+        k.nameFirst,
+        k.nameLast,
+        k.teamID
+    FROM
+        HallOfFame AS h
+    JOIN(
+        SELECT DISTINCT
+            p.nameFirst,
+            p.nameLast,
+            m.teamID,
+            m.playerID
+        FROM
+            Managers AS m
+        JOIN MASTER AS p
+        ON
+            p.playerID = m.playerID
+        AND m.yearID > '{}'
+    ) AS k
+ON
+    k.playerID = h.playerID
+WHERE
+    h.yearID > '{}'
+AND h.Inducted = 'Y'
+) as m
+WHERE t.teamID = m.teamID
+ORDER BY
+    t.name ASC, t.rank ASC;
     """.format(datum_x, datum_y)
     
     # Stap 2 & 3
@@ -97,7 +124,7 @@ def query_06(connection, column_names, salaris=20000):
         FROM salaries as s
         WHERE s.yearID = t.yearID
             AND s.teamID = t.teamID
-            AND s.salary < {})
+            AND s.salary < ' salaris ')
     ORDER BY t.W ASC;
     """.format(salaris)
     
@@ -128,15 +155,17 @@ def query_07(connection, column_names):
     
     return df
 
+
+
 def query_08(connection, column_names, jaar=1990, lengte=75):
     # Bouw je query
     query="""
     SELECT p.birthState, AVG(p.weight), AVG(p.height), AVG(bat.HR), AVG(pitch.SV)
     FROM Master as p, Batting as bat, Pitching as pitch, HallOfFame as hof
     WHERE p.playerID = pitch.playerID AND p.playerID = bat.playerID
-        AND p.playerID = hof.playerID AND hof.yearid > {} AND hof.inducted = 'Y'
+        AND p.playerID = hof.playerID AND hof.yearid > ' jaar ' AND hof.inducted = 'Y'
     GROUP BY p.birthState
-    HAVING AVG(p.height) > {}
+    HAVING AVG(p.height) > ' lengte '
     ORDER BY p.birthState ASC 
     """.format(jaar, lengte)
     
@@ -146,6 +175,7 @@ def query_08(connection, column_names, jaar=1990, lengte=75):
     
     return df
 
+
 def query_09(connection, column_names, jaar=1975):
     # Bouw je query
     query="""
@@ -154,8 +184,61 @@ def query_09(connection, column_names, jaar=1975):
     WHERE  (SELECT COUNT(*)
             FROM   Teams as t2
             WHERE  t1.HR < t2.HR)
-    = 1;
-    """
+            = 1
+    AND     t1.yearID = '{}';
+    """.format(jaar)
+    
+    # Stap 2 & 3
+    res = run_query(connection, query)         # Query uitvoeren
+    df = res_to_df(res, column_names)          # Query in DataFrame brengen
+    
+    return df
+
+def query_10(connection, column_names, jaar=1990):
+    # Bouw je query
+    query="""
+SELECT
+  DISTINCT team.yearID,
+  team.name,
+  team.R,
+  team.G
+FROM
+  (	  SELECT
+      DISTINCT t.name,
+      t.yearID,
+      t.R,
+      t.G
+    FROM
+      (
+        SELECT
+          DISTINCT Teams.name,
+          Teams.yearID,
+          Teams.R,
+          Teams.G,
+          Salaries.playerID
+        FROM
+          Teams
+          , Salaries 
+        WHERE
+          Teams.yearID = '{}'
+          AND Salaries.teamID = Teams.teamID
+      ) as t
+    WHERE
+      (
+        SELECT
+          COUNT(*)
+        FROM
+          AwardsPlayers as ap
+        WHERE
+          t.playerID = ap.playerID
+          AND ap.yearID = '{}'
+      ) = 1
+  ) as team
+ORDER BY
+  team.name ASC,
+  team.R ASC;
+    
+    """.format(jaar, jaar)
     
     # Stap 2 & 3
     res = run_query(connection, query)         # Query uitvoeren
