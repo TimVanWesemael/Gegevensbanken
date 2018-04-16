@@ -33,10 +33,10 @@ def query_03(connection, column_names):
     SELECT DISTINCT t.name, m.nameFirst, m.nameLast
     FROM     Teams as t, 
              (SELECT DISTINCT man.teamID, man.plyrMgr, p.nameFirst, p.nameLast
-              FROM	 Master p JOIN managers man 
+              FROM	 Master p JOIN Managers man 
               ON p.playerID = man.playerID) as m
     WHERE    m.plyrMgr = 'N'
-    AND		 m.teamID = t.teamID
+    AND      m.teamID = t.teamID
     ORDER BY t.name ASC;
     """
     
@@ -73,7 +73,7 @@ FROM
             m.playerID
         FROM
             Managers AS m
-        JOIN MASTER AS p
+        JOIN Master AS p
         ON
             p.playerID = m.playerID
         AND m.yearID > '{}'
@@ -121,7 +121,7 @@ def query_06(connection, column_names, salaris=20000):
     FROM Teams as t
     WHERE NOT EXISTS
         (SELECT *
-        FROM salaries as s
+        FROM Salaries as s
         WHERE s.yearID = t.yearID
             AND s.teamID = t.teamID
             AND s.salary < ' salaris ')
@@ -139,13 +139,13 @@ def query_07(connection, column_names):
     query="""
     SELECT DISTINCT m.nameLast, m.nameFirst 
     
-    FROM master as m
+    FROM Master as m
     WHERE   (SELECT COUNT(DISTINCT playerID, awardID)
-            FROM  awardsmanagers as aw
+            FROM  AwardsManagers as aw
             WHERE m.playerID = aw.playerID)
         =
             (SELECT COUNT(DISTINCT awardID)
-            FROM awardsmanagers as aw)
+            FROM AwardsManagers as aw)
     ORDER BY m.nameLast ASC;
     """
     
