@@ -189,7 +189,7 @@ def query_09(connection, column_names, jaar=1975):
                     WHERE  t.yearID = '{}') as t2
             WHERE  t1.HR < t2.HR)
             = 1;
-    """.format(jaar)
+    """.format(jaar, jaar)
     
     # Stap 2 & 3
     res = run_query(connection, query)         # Query uitvoeren
