@@ -46,6 +46,7 @@ def query_03(connection, column_names):
     
     return df
 
+
 def query_04(connection, column_names, datum_x='1980-01-01', datum_y='1980-01-01'):
     # Bouw je query
     query="""
